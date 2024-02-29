@@ -1,7 +1,8 @@
 class Course < ApplicationRecord
-  belongs_to :admin, class_name: "User"
+  belongs_to :admin, foreign_key: 'user_id'
   has_many :student_enroll_courses
   has_many :student, through: :student_enroll_courses
-
-  validates :name, presence: true
+  has_one :instructor_assignee_course
+  has_one :instructor, through: :instructor_assignee_course
+  validates :name, presence: true, uniqueness: true
 end

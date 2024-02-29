@@ -1,6 +1,6 @@
 class User < ApplicationRecord
-  validates :name, presence: true
-  validates :contact, length: { is: 10 }
-  validates :email, presence: true #, uniqueness: true
-  validates :role, inclusion: { in: ['Student', 'Instructor', 'Admin']}
+  validates :name, presence: true, length: {minimum: 3}
+  validates :contact, uniqueness: true, presence: true, length: { is: 10 }
+  validates :email, presence: true , uniqueness: {case_sensitive: false}
+  validates :type, inclusion: { in: ['Student', 'Instructor', 'Admin']}
 end
