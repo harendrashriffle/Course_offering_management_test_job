@@ -4,5 +4,6 @@ class Course < ApplicationRecord
   has_many :student, through: :student_enroll_courses
   has_one :instructor_assignee_course
   has_one :instructor, through: :instructor_assignee_course
-  validates :name, presence: true, uniqueness: true
+
+  validates :name, presence: true
 end

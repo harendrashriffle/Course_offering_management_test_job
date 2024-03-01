@@ -4,19 +4,22 @@ class UsersController < ApplicationController
   def user_login
     if user = User.find_by(email: params[:email], password_digest: params[:password_digest])
       token = jwt_encode(user_id: user.id)
-      render json: { message: "Logged In Successfully..", token: token }
+      render json: { message: "Logged In Successfully..", token: token }, status: :ok
     else
-      render json: { error: "Please Check your Email And Password....." }
+      render json: { error: "Please Check your Email And Password....." }, status: :unprocessable_entity
     end
   end
 
   def create
     if @current_user.type == "Admin"
       user = User.new(set_params)
-      return render json: {errors: user.errors.full_messages} unless user.save
-      render json: {message:"User Created", data: user}
+      if user.save
+        render json: {message:"User Created", data: user}, status: :ok
+      else
+        render json: {errors: user.errors.full_messages}, status: :unprocessable_entity
+      end
     else
-      render json: {message: "You are not authorized to create account"}
+      render json: {message: "You are not authorized to create account"}, status: :unprocessable_entity
     end
   end
 
@@ -24,12 +27,12 @@ class UsersController < ApplicationController
     if @current_user.type == "Admin"
       user = User.find_by_id(params[:id])
       if user.present?
-        render json: {message:"Here is your result", data: user}
+        render json: {message:"Here is your result", data: user}, status: :ok
       else
-        render json: {error: "Id is not present"}
+        render json: {error: "Id is not present"}, status: :not_found
       end
     else
-      render json: @current_user
+      render json: @current_user, status: :ok
     end
   end
 
