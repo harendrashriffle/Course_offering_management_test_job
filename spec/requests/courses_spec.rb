@@ -25,7 +25,7 @@ RSpec.describe "Courses", type: :request do
 
   describe "POST /create" do
     it 'should allow admin to create course' do
-      post "/courses", params: {name: course.name }, headers: { "Authorization" => "Bearer #{jwt_encode(user_id: admin.id)}"}
+      post "/courses", params: { name: course.name }, headers: { "Authorization" => "Bearer #{jwt_encode(user_id: admin.id)}"}
       expect(response).to have_http_status(:ok)
     end
     it 'should allow admin but not create course' do
@@ -40,7 +40,7 @@ RSpec.describe "Courses", type: :request do
 
   describe "GET /show" do
     it 'should show specific course' do
-      get "/courses/#{course.id}"#, params: {id: course.id}
+      get "/courses/#{course.id}"
       expect(response).to have_http_status(:ok)
     end
     it 'should show error if course not found' do
