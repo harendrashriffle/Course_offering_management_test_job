@@ -15,4 +15,10 @@ class ApplicationController < ActionController::Base
       render json: { error: 'Invalid token' }, status: :unprocessable_entity
     end
   end
+
+  def admin_access
+    unless @current_user.type == "Admin"
+      render json: {error: "You are not authorized for such action"}, status: :unprocessable_entity
+    end
+  end
 end

@@ -1,5 +1,7 @@
 class UsersController < ApplicationController
   skip_before_action :authenticate_request, only: [:user_login]
+  before_action :admin_access, only: [:create]
+  before_action :user, only: [:update, :delete]
 
   def user_login
     if user = User.find_by(email: params[:email], password_digest: params[:password_digest])
@@ -11,33 +13,43 @@ class UsersController < ApplicationController
   end
 
   def create
-    if @current_user.type == "Admin"
-      user = User.new(set_params)
-      if user.save
-        render json: {message:"User Created", data: user}, status: :ok
-      else
-        render json: {errors: user.errors.full_messages}, status: :unprocessable_entity
-      end
-    else
-      render json: {message: "You are not authorized to create account"}, status: :unprocessable_entity
-    end
+    user = User.new(set_params)
+    return render json: {errors: user.errors.full_messages}, status: :unprocessable_entity unless user.save
+    UserMailer.welcome_email(user).deliver_now
+    render json: {message:"User Created", data: user}, status: :ok
   end
 
   def show
-    if @current_user.type == "Admin"
-      user = User.find_by_id(params[:id])
-      if user.present?
-        render json: {message:"Here is your result", data: user}, status: :ok
-      else
-        render json: {error: "Id is not present"}, status: :not_found
-      end
-    else
-      render json: @current_user, status: :ok
-    end
+    return render json: user, status: :ok if admin
+    render json: @current_user, status: :ok
+  end
+
+  def update
+    return render json: {error: "User doesn't update"}, status: :unprocessable_entity unless user.update
+    render json: user, status: :ok
+  end
+
+  def destroy
+    return render json: {errors: "User doesn't delete succesfully"}, status: :unprocessable_entity unless user.destroy
+    UserMailer.deletion_email(user).deliver_now
+    render json: {message: "User Account delete Succesfully"}, status: :ok
   end
 
   private
     def set_params
-      params.permit(:name, :contact, :email, :password_digest, :type)
+      params.require(:user).permit(:name, :contact, :email, :password_digest, :type)
+    end
+
+    def user
+      user = User.find_by_id(params[:id])
+      user.nil? ? "User doesn't exist" : user
+    end
+
+    def admin
+      @current_user.type == "Admin"
+    end
+
+    def instructor
+      @current_user.type == "Instructor"
     end
 end
